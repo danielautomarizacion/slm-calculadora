@@ -7,12 +7,11 @@ import {
 import { TABLES } from './constants'
 import type { CalculadoraConfig } from '../calc/types'
 
-// Campos de la tabla "Calculadora Config" (crear manualmente en Airtable UI)
 type ConfigFields = {
-  'Nombre config'?: string
-  'Fecha guardado'?: string
-  'JSON config'?: string
-  Activa?: boolean
+  'Nombre configuración'?: string
+  'Fecha guardado'?:       string
+  'JSON config'?:          string
+  Activa?:                 boolean
 }
 
 export type ConfigRecord = {
@@ -29,8 +28,8 @@ function mapConfig(rec: AirtableRecord<ConfigFields>): ConfigRecord | null {
   try {
     return {
       id:            rec.id,
-      nombre:        rec.fields['Nombre config'] ?? '',
-      fechaGuardado: rec.fields['Fecha guardado'] ?? '',
+      nombre:        rec.fields['Nombre configuración'] ?? '',
+      fechaGuardado: rec.fields['Fecha guardado']       ?? '',
       config:        JSON.parse(raw) as CalculadoraConfig,
       activa:        rec.fields.Activa ?? false,
     }
@@ -70,7 +69,6 @@ export async function saveConfig(
   const tableId = TABLES.CALCULADORA_CONFIG
   if (!tableId) throw new Error('CALCULADORA_CONFIG table ID no configurado en constants.ts')
 
-  // Desactivar configuraciones activas previas
   const activas = await readAirtableConfigs<ConfigFields>(tableId, {
     filterByFormula: '{Activa}=TRUE()',
   })
@@ -78,13 +76,12 @@ export async function saveConfig(
     await updateAirtableRecord(tableId, rec.id, { Activa: false })
   }
 
-  // Crear nueva configuración activa
   const now = new Date().toISOString()
   const created = await createAirtableRecord<ConfigFields>(tableId, {
-    'Nombre config':  nombre,
-    'Fecha guardado': now,
-    'JSON config':    JSON.stringify(config),
-    Activa:           true,
+    'Nombre configuración': nombre,
+    'Fecha guardado':       now,
+    'JSON config':          JSON.stringify(config),
+    Activa:                 true,
   })
 
   return {
